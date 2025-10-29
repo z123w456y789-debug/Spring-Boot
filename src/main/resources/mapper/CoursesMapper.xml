@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pn.mapper.CoursesMapper">
+
+    <!-- 根据学生ID查询已选的课程列表 -->
+    <select id="findCoursesByStudentId" resultType="com.pn.entity.Course">
+        SELECT
+        c.id,
+        c.name,
+        c.course_code as courseCode,
+        c.cover_image as coverImage,
+        c.description,
+        c.college_id as collegeId,
+        c.category,
+        c.creator_id as creatorId,
+        c.status,
+        c.created_at as createdAt,
+        c.updated_at as updatedAt,
+        u.real_name as teacherName
+        FROM student_courses sc
+        INNER JOIN courses c ON sc.course_id = c.id
+        INNER JOIN course_classes cc ON sc.course_class_id = cc.id
+        INNER JOIN teachers t ON cc.teacher_id = t.id
+        INNER JOIN users u ON t.user_id = u.id
+        WHERE sc.student_id = #{studentId}
+        AND sc.status = 'studying'
+        AND c.status = 'published'
+        ORDER BY sc.created_at DESC
+    </select>
+
+    <!-- 根据课程代码查询课程信息 -->
+    <select id="findCourseByCode" resultType="com.pn.entity.Course">
+        SELECT
+        id,
+        name,
+        course_code as courseCode,
+        cover_image as coverImage,
+        description,
+        college_id as collegeId,
+        category,
+        creator_id as creatorId,
+        status,
+        created_at as createdAt,
+        updated_at as updatedAt
+        FROM courses
+        WHERE course_code = #{courseCode}
+        AND status = 'published'
+    </select>
+
+    <!-- 检查学生是否已经选过该课程 -->
+    <select id="checkCourseEnrollment" resultType="int">
+        SELECT COUNT(*)
+        FROM student_courses
+        WHERE student_id = #{studentId}
+        AND course_id = #{courseId}
+        AND status = 'studying'
+    </select>
+
+    <!-- 学生选课 - 插入student_courses表 -->
+    <insert id="enrollCourse">
+        INSERT INTO student_courses (
+        student_id,
+        course_id,
+        course_class_id,
+        status,
+        created_at,
+        updated_at
+        )
+        SELECT
+        #{studentId},
+        #{courseId},
+        cc.id,
+        'studying',
+        NOW(),
+        NOW()
+        FROM course_classes cc
+        WHERE cc.course_id = #{courseId}
+        LIMIT 1
+    </insert>
+
+    <!-- 根据用户名获取学生ID -->
+    <select id="findStudentIdByUsername" resultType="java.lang.Long">
+        SELECT s.id
+        FROM students s
+        INNER JOIN users u ON s.user_id = u.id
+        WHERE u.username = #{username}
+    </select>
+
+</mapper>
