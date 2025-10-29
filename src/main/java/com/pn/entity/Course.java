@@ -62,6 +62,7 @@ public class Course implements Serializable {
      */
     private Date createdAt;
 
+
     /**
      * 更新时间
      */
