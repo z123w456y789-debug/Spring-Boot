@@ -1,15 +1,28 @@
 #!/bin/bash
-# monitor_backend.sh - Spring Boot 监控脚本
+# monitor_backend.sh - 增强版监控脚本（包含自动提交）
 
-echo "🚀 Spring Boot自动监控启动"
-echo "📡 每30秒检查一次GitHub更新"
+echo "🚀 Spring Boot自动监控启动（包含自动提交）"
+echo "📡 每30秒检查并提交本地更改"
 echo "⏹️  按 Ctrl + C 停止监控"
 echo "----------------------------------------"
 
 while true; do
-    echo "[$(date +%H:%M:%S)] 检查更新..."
+    echo "[$(date +%H:%M:%S)] 检查本地更改..."
+    
+    # 首先自动提交本地更改
+    if git status --porcelain | grep -q .; then
+        echo "🔄 发现本地更改，自动提交..."
+        git add .
+        git commit -m "自动提交: $(date '+%Y-%m-%d %H:%M:%S')"
+        git push origin main
+    fi
+    
+    # 然后检查远程更新
+    echo "[$(date +%H:%M:%S)] 检查远程更新..."
     ./auto_deploy_backend.sh
+    
     echo "等待30秒..."
     sleep 30
     echo "----------------------------------------"
 done
+
