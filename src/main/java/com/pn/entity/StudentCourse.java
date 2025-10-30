@@ -19,6 +19,7 @@ public class StudentCourse implements Serializable {
 
     /**
      * 学生ID
+     *
      */
     /**
      * 学生ID
